@@ -103,6 +103,30 @@ class ServicesTests(unittest.TestCase):
                     "DELETE FROM movimientos_ctacte WHERE numero_comprobante = 'F-1'"
                 )
 
+    def test_shared_data_revision_tracks_provider_and_movement_changes(self):
+        revision = database.get_sync_revision()
+        services.actualizar_proveedor(
+            self.provider_id, "Proveedor actualizado", "30-71185817-9"
+        )
+        self.assertEqual(database.get_sync_revision(), revision + 1)
+
+        services.cambiar_estado_proveedor(self.provider_id)
+        self.assertEqual(database.get_sync_revision(), revision + 2)
+
+        services.cambiar_estado_proveedor(self.provider_id)
+        self.add_movement("FACTURA_A", "F-SYNC", 10000, "2026-03-10", "2026-03-25")
+        self.assertEqual(database.get_sync_revision(), revision + 4)
+
+    def test_summary_includes_ranked_balance_chart_data(self):
+        self.add_movement("FACTURA_A", "F-CHART", 25000, "2026-03-10", "2026-03-25")
+
+        chart = services.obtener_resumen()["proveedores_con_mayor_saldo"]
+
+        self.assertEqual(len(chart), 1)
+        self.assertEqual(chart[0]["razon_social"], "Proveedor de prueba")
+        self.assertEqual(chart[0]["saldo_centavos"], 25000)
+        self.assertEqual(chart[0]["porcentaje"], 100)
+
     def test_existing_scaffold_database_is_migrated(self):
         current_path = database.DB_PATH
         legacy_path = Path(self.temp_dir.name) / "legacy.db"

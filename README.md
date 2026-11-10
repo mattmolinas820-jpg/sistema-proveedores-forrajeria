@@ -51,6 +51,8 @@ El archivo SQLite local no se comparte automáticamente. La versión cloud usa P
 
 Si solo querés probar el despliegue sin datos previos, omití el paso de migración. La aplicación inicializa el esquema PostgreSQL de Supabase al arrancar.
 
+Todos los dispositivos deben abrir la misma dirección de Render para trabajar sobre los mismos datos. La aplicación comprueba cambios cada 15 segundos y actualiza la pantalla automáticamente; si estás completando un formulario, espera a que lo guardes o elijas actualizar. La aplicación local abierta en `localhost` usa SQLite y no comparte cambios con Supabase.
+
 ### Ejecutar localmente contra PostgreSQL
 
 Definí `DATABASE_URL`, `SECRET_KEY`, `ADMIN_USERNAME` y `ADMIN_PASSWORD_HASH` antes de iniciar `python app.py`. Si `DATABASE_URL` no está definida, el sistema sigue usando SQLite local.

@@ -10,7 +10,7 @@ from flask import Flask, Response, abort, flash, jsonify, redirect, render_templ
 from werkzeug.security import check_password_hash
 
 import services
-from database import DATABASE_URL, INTEGRITY_ERRORS, get_db, init_db
+from database import DATABASE_URL, INTEGRITY_ERRORS, get_db, get_sync_revision, init_db
 
 
 app = Flask(__name__)
@@ -51,7 +51,16 @@ def inject_security_helpers():
             session["_csrf_token"] = secrets.token_urlsafe(32)
         return session["_csrf_token"]
 
-    return {"csrf_token": csrf_token, "cloud_mode": cloud_mode}
+    sync_revision = (
+        get_sync_revision()
+        if cloud_mode and request.endpoint != "imprimir_ctacte"
+        else None
+    )
+    return {
+        "csrf_token": csrf_token,
+        "cloud_mode": cloud_mode,
+        "sync_revision": sync_revision,
+    }
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -85,6 +94,11 @@ def health():
     with get_db() as connection:
         connection.execute("SELECT 1")
     return jsonify(status="ok")
+
+
+@app.get("/sync-version")
+def sync_version():
+    return jsonify(revision=get_sync_revision())
 
 
 def _read_date(value, label, required=False):

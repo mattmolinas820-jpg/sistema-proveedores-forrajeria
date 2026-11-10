@@ -5,6 +5,7 @@ from pathlib import Path
 
 import app as web_app
 import database
+import services
 from werkzeug.security import generate_password_hash
 
 
@@ -52,6 +53,27 @@ class WebSecurityTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Proveedor web", response.data)
 
+    def test_dashboard_renders_animated_balance_chart(self):
+        proveedor_id = services.crear_proveedor(
+            "Proveedor del gráfico", "30-71185817-9"
+        )
+        services.registrar_movimiento(
+            proveedor_id,
+            "FACTURA_A",
+            "F-CHART",
+            25000,
+            "2026-03-10",
+            "2026-03-25",
+        )
+
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Mayores saldos pendientes", response.data)
+        self.assertIn(b"Proveedor del gr", response.data)
+        self.assertIn(b"chart-bar", response.data)
+        self.assertIn(b"width: 100%", response.data)
+
     def test_cloud_pages_require_login(self):
         web_app.cloud_mode = True
         web_app.admin_username = "admin"
@@ -60,6 +82,8 @@ class WebSecurityTests(unittest.TestCase):
         response = self.client.get("/")
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login", response.location)
+        sync_response = self.client.get("/sync-version")
+        self.assertEqual(sync_response.status_code, 302)
 
         login_page = self.client.get("/login")
         token = re.search(rb'name="csrf_token" value="([^"]+)"', login_page.data).group(1).decode()
@@ -69,6 +93,7 @@ class WebSecurityTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.client.get("/").status_code, 200)
+        self.assertEqual(self.client.get("/sync-version").json, {"revision": 0})
 
 
 if __name__ == "__main__":

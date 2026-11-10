@@ -122,6 +122,20 @@ def _init_postgres():
         )
         connection.execute(
             """
+            CREATE TABLE IF NOT EXISTS app_sync_state (
+                id SMALLINT PRIMARY KEY CHECK (id = 1),
+                revision BIGINT NOT NULL DEFAULT 0
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO app_sync_state (id, revision) VALUES (1, 0)
+            ON CONFLICT (id) DO NOTHING
+            """
+        )
+        connection.execute(
+            """
             CREATE INDEX IF NOT EXISTS idx_movimientos_proveedor_fecha
             ON movimientos_ctacte (proveedor_id, fecha, id)
             """
@@ -223,6 +237,11 @@ def init_db():
                 UNIQUE (pago_id, factura_id),
                 CHECK (pago_id != factura_id)
             );
+            CREATE TABLE IF NOT EXISTS app_sync_state (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                revision INTEGER NOT NULL DEFAULT 0
+            );
+            INSERT OR IGNORE INTO app_sync_state (id, revision) VALUES (1, 0);
             """
         )
 
@@ -299,6 +318,20 @@ def init_db():
                     "UPDATE movimientos_ctacte SET saldo_resultante_centavos = ? WHERE id = ?",
                     (balance, movement["id"]),
                 )
+
+
+def get_sync_revision():
+    with get_db() as connection:
+        row = connection.execute(
+            "SELECT revision FROM app_sync_state WHERE id = 1"
+        ).fetchone()
+        return row["revision"]
+
+
+def touch_sync_revision(connection):
+    connection.execute(
+        "UPDATE app_sync_state SET revision = revision + 1 WHERE id = 1"
+    )
 
 
 if __name__ == "__main__":

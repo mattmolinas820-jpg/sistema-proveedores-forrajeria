@@ -2,7 +2,7 @@ import re
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
-from database import DATABASE_URL, get_db
+from database import DATABASE_URL, get_db, touch_sync_revision
 
 
 INVOICE_TYPES = {"FACTURA_A", "FACTURA_B", "FACTURA_C", "NOTA_DEBITO"}
@@ -191,6 +191,7 @@ def registrar_movimiento(
             )
 
         _rebuild_balances(connection, proveedor_id)
+        touch_sync_revision(connection)
         balance = connection.execute(
             """
             SELECT saldo_resultante_centavos
@@ -220,7 +221,9 @@ def crear_proveedor(razon_social, cuit_cuil, email="", telefono=""):
             """,
             (razon_social, cuit_cuil, email.strip(), telefono.strip()),
         )
-        return cursor.fetchone()["id"]
+        proveedor_id = cursor.fetchone()["id"]
+        touch_sync_revision(connection)
+        return proveedor_id
 
 
 def actualizar_proveedor(proveedor_id, razon_social, cuit_cuil, email="", telefono=""):
@@ -241,6 +244,7 @@ def actualizar_proveedor(proveedor_id, razon_social, cuit_cuil, email="", telefo
         )
         if cursor.rowcount == 0:
             raise ValidationError("El proveedor no existe.")
+        touch_sync_revision(connection)
 
 
 def cambiar_estado_proveedor(proveedor_id):
@@ -251,6 +255,7 @@ def cambiar_estado_proveedor(proveedor_id):
         )
         if cursor.rowcount == 0:
             raise ValidationError("El proveedor no existe.")
+        touch_sync_revision(connection)
 
 
 def obtener_proveedor(proveedor_id):
@@ -366,8 +371,26 @@ def obtener_resumen():
         ).fetchall()
 
     saldos = [proveedor["saldo_centavos"] for proveedor in proveedores]
+    top_saldos = sorted(
+        (
+            proveedor
+            for proveedor in proveedores
+            if proveedor["estado"] and proveedor["saldo_centavos"] > 0
+        ),
+        key=lambda proveedor: proveedor["saldo_centavos"],
+        reverse=True,
+    )[:5]
+    max_saldo = top_saldos[0]["saldo_centavos"] if top_saldos else 0
     return {
         "cantidad_proveedores": sum(proveedor["estado"] for proveedor in proveedores),
         "saldo_total_centavos": sum(saldos),
         "vencimientos": vencimientos,
+        "proveedores_con_mayor_saldo": [
+            {
+                "razon_social": proveedor["razon_social"],
+                "saldo_centavos": proveedor["saldo_centavos"],
+                "porcentaje": round(proveedor["saldo_centavos"] / max_saldo * 100),
+            }
+            for proveedor in top_saldos
+        ],
     }

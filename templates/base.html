@@ -8,38 +8,38 @@
     <style>
         :root {
             color-scheme: light;
-            --forest-950: #10251c;
-            --forest-800: #1b4431;
-            --forest-700: #246143;
-            --forest-600: #2f7951;
-            --forest-100: #e8f2eb;
-            --ink: #18251e;
-            --muted: #748078;
-            --line: #e5eae5;
+            --blue-950: #10263d;
+            --blue-800: #16466c;
+            --blue-700: #17618d;
+            --blue-600: #1683b5;
+            --blue-100: #e2f4fc;
+            --ink: #172b3d;
+            --muted: #718394;
+            --line: #e1eaf0;
         }
 
         * { -webkit-tap-highlight-color: transparent; }
         body {
             background:
-                radial-gradient(ellipse at 8% 0%, rgba(196, 224, 199, .44), transparent 30rem),
-                radial-gradient(ellipse at 94% 18%, rgba(226, 236, 214, .42), transparent 28rem),
-                #f5f7f4;
+                radial-gradient(ellipse at 8% 0%, rgba(157, 220, 244, .38), transparent 30rem),
+                radial-gradient(ellipse at 94% 18%, rgba(190, 225, 246, .36), transparent 28rem),
+                #f4f8fb;
             color: var(--ink);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             letter-spacing: -.012em;
         }
         nav.app-nav {
-            background: linear-gradient(110deg, var(--forest-950), #173a2b 68%, #24513a);
-            box-shadow: 0 8px 26px rgba(16, 37, 28, .12);
+            background: linear-gradient(110deg, var(--blue-950), #123b5b 68%, #17618d);
+            box-shadow: 0 8px 26px rgba(16, 38, 61, .14);
         }
         .brand-mark {
-            background: linear-gradient(145deg, #a3d39e, #d6e8aa);
-            box-shadow: 0 4px 12px rgba(163, 211, 158, .22);
+            background: linear-gradient(145deg, #7dd3fc, #c7efff);
+            box-shadow: 0 4px 12px rgba(125, 211, 252, .24);
         }
         .nav-link {
             border: 1px solid transparent;
             border-radius: 999px;
-            color: #d3e2d7;
+            color: #d4eaf6;
             transition: background .18s ease, color .18s ease, border-color .18s ease;
         }
         .nav-link:hover, .nav-link.active {
@@ -49,7 +49,7 @@
         }
         main { animation: page-enter .35s ease-out both; }
         section, article {
-            box-shadow: 0 2px 5px rgba(18, 38, 27, .025), 0 12px 30px rgba(18, 38, 27, .035);
+            box-shadow: 0 2px 5px rgba(18, 45, 68, .025), 0 12px 30px rgba(18, 45, 68, .04);
         }
         section table thead, article table thead { letter-spacing: .075em; }
         section tbody tr { transition: background-color .15s ease; }
@@ -57,17 +57,17 @@
             transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
         }
         input:focus, select:focus, textarea:focus {
-            border-color: #69a47c !important;
-            box-shadow: 0 0 0 3px rgba(73, 139, 94, .13);
+            border-color: #38a9d8 !important;
+            box-shadow: 0 0 0 3px rgba(56, 169, 216, .16);
             outline: none;
         }
         button, a { transition: color .16s ease, background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease; }
         button:active, a:active { transform: translateY(1px); }
-        .page-kicker { color: var(--forest-600) !important; }
+        .page-kicker { color: var(--blue-600) !important; }
         .page-title { letter-spacing: -.045em; }
         .metric-card { position: relative; overflow: hidden; }
         .metric-card::after {
-            background: linear-gradient(135deg, rgba(47, 121, 81, .08), transparent 65%);
+            background: linear-gradient(135deg, rgba(22, 131, 181, .09), transparent 65%);
             content: "";
             inset: 0;
             pointer-events: none;
@@ -75,25 +75,34 @@
         }
         .metric-icon {
             align-items: center;
-            background: var(--forest-100);
+            background: var(--blue-100);
             border-radius: 14px;
-            color: var(--forest-700);
+            color: var(--blue-700);
             display: inline-flex;
             height: 42px;
             justify-content: center;
             width: 42px;
         }
         .primary-action {
-            background: linear-gradient(135deg, var(--forest-700), var(--forest-600)) !important;
-            box-shadow: 0 6px 14px rgba(47, 121, 81, .18);
+            background: linear-gradient(135deg, var(--blue-700), var(--blue-600)) !important;
+            box-shadow: 0 6px 14px rgba(22, 131, 181, .2);
         }
-        .primary-action:hover { box-shadow: 0 8px 18px rgba(47, 121, 81, .25); }
+        .primary-action:hover { box-shadow: 0 8px 18px rgba(22, 131, 181, .27); }
         .soft-divider { border-color: var(--line) !important; }
-        ::selection { background: #d9ebdc; color: var(--forest-950); }
+        .chart-bar {
+            animation: chart-grow .85s cubic-bezier(.2, .75, .25, 1) both;
+            background: linear-gradient(90deg, #1683b5, #55c5ec);
+            border-radius: 999px;
+            transform-origin: left center;
+        }
 
         @keyframes page-enter {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes chart-grow {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -106,14 +115,14 @@
         }
     </style>
 </head>
-<body class="min-h-screen text-slate-800 antialiased flex flex-col">
+<body class="min-h-screen text-slate-800 antialiased flex flex-col" data-sync-enabled="{{ 'true' if sync_revision is not none else 'false' }}" data-sync-revision="{{ sync_revision if sync_revision is not none else '' }}" data-sync-url="{{ url_for('sync_version') }}">
     <nav class="app-nav sticky top-0 z-30 text-white no-print">
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5">
             <a href="{{ url_for('index') }}" class="flex items-center gap-3 font-bold tracking-tight">
-                <span class="brand-mark flex h-10 w-10 items-center justify-center rounded-xl text-lg text-emerald-950">
+                <span class="brand-mark flex h-10 w-10 items-center justify-center rounded-xl text-lg text-sky-950">
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" class="h-6 w-6"><path d="M4 19V9.5L12 5l8 4.5V19M8 19v-5h8v5M3 19h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 5V2m0 0c-2.6.1-4 1.2-4 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 </span>
-                <span class="text-base leading-tight sm:text-lg">Forrajería<span class="mt-0.5 block text-[11px] font-medium tracking-wide text-emerald-100/70">GESTIÓN COMERCIAL</span></span>
+                <span class="text-base leading-tight sm:text-lg">Forrajería<span class="mt-0.5 block text-[11px] font-medium tracking-wide text-sky-100/80">GESTIÓN COMERCIAL</span></span>
             </a>
             <div class="flex items-center gap-1 text-xs font-semibold sm:gap-2 sm:text-sm">
                 <a href="{{ url_for('index') }}" class="nav-link flex items-center gap-2 px-3 py-2 {{ 'active' if request.endpoint == 'index' else '' }}">
@@ -134,10 +143,15 @@
         </div>
     </nav>
 
+    <div id="sync-notice" hidden role="status" aria-live="polite" class="fixed bottom-4 right-4 z-50 flex max-w-[calc(100%-2rem)] items-center gap-3 rounded-xl border border-sky-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-xl">
+        <span id="sync-message"></span>
+        <button id="sync-refresh" type="button" hidden class="shrink-0 rounded-lg bg-sky-700 px-3 py-1.5 font-semibold text-white hover:bg-sky-800">Actualizar</button>
+    </div>
+
     <main class="mx-auto w-full max-w-7xl flex-grow px-4 py-7 sm:px-5 sm:py-9">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% for category, message in messages %}
-                <div role="status" class="mb-4 rounded-xl border px-4 py-3 text-sm font-medium shadow-sm {{ 'border-emerald-200 bg-emerald-50 text-emerald-800' if category == 'success' else 'border-rose-200 bg-rose-50 text-rose-800' }}">
+                <div role="status" class="mb-4 rounded-xl border px-4 py-3 text-sm font-medium shadow-sm {{ 'border-sky-200 bg-sky-50 text-sky-800' if category == 'success' else 'border-rose-200 bg-rose-50 text-rose-800' }}">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -148,5 +162,56 @@
     <footer class="mt-10 border-t border-slate-200/80 bg-white/70 py-5 text-center text-xs text-slate-500 no-print">
         Forrajería <span class="mx-1 text-slate-300">·</span> Administración de proveedores
     </footer>
+    <script>
+        (() => {
+            const page = document.body;
+            if (page.dataset.syncEnabled !== "true") return;
+
+            const notice = document.getElementById("sync-notice");
+            const message = document.getElementById("sync-message");
+            const refresh = document.getElementById("sync-refresh");
+            let revision = page.dataset.syncRevision;
+            let hasUnsavedChanges = false;
+
+            document.querySelectorAll("form").forEach((form) => {
+                form.addEventListener("input", () => { hasUnsavedChanges = true; });
+                form.addEventListener("change", () => { hasUnsavedChanges = true; });
+            });
+            refresh.addEventListener("click", () => window.location.reload());
+
+            const showNotice = (text, canRefresh) => {
+                message.textContent = text;
+                refresh.hidden = !canRefresh;
+                notice.hidden = false;
+            };
+
+            const checkForUpdates = async () => {
+                if (document.hidden) return;
+                try {
+                    const response = await fetch(page.dataset.syncUrl, {
+                        cache: "no-store",
+                        headers: { Accept: "application/json" }
+                    });
+                    if (!response.ok) throw new Error("No se pudo consultar la sincronización.");
+                    const data = await response.json();
+                    if (String(data.revision) !== revision) {
+                        if (hasUnsavedChanges) {
+                            showNotice("Hay cambios nuevos. Guardá el formulario antes de actualizar.", true);
+                        } else {
+                            window.location.reload();
+                        }
+                    } else if (notice.dataset.error === "true") {
+                        notice.hidden = true;
+                        delete notice.dataset.error;
+                    }
+                } catch {
+                    notice.dataset.error = "true";
+                    showNotice("No se pudo comprobar la sincronización. Revisá tu conexión.", false);
+                }
+            };
+
+            window.setInterval(checkForUpdates, 15000);
+        })();
+    </script>
 </body>
 </html>
