@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.py[cod]
+proveedores.db
+proveedores.db-shm
+proveedores.db-wal
+.env

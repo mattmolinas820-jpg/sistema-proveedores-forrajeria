@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Proveedores | Forrajería{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            color-scheme: light;
+            --forest-950: #10251c;
+            --forest-800: #1b4431;
+            --forest-700: #246143;
+            --forest-600: #2f7951;
+            --forest-100: #e8f2eb;
+            --ink: #18251e;
+            --muted: #748078;
+            --line: #e5eae5;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            background:
+                radial-gradient(ellipse at 8% 0%, rgba(196, 224, 199, .44), transparent 30rem),
+                radial-gradient(ellipse at 94% 18%, rgba(226, 236, 214, .42), transparent 28rem),
+                #f5f7f4;
+            color: var(--ink);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            letter-spacing: -.012em;
+        }
+        nav.app-nav {
+            background: linear-gradient(110deg, var(--forest-950), #173a2b 68%, #24513a);
+            box-shadow: 0 8px 26px rgba(16, 37, 28, .12);
+        }
+        .brand-mark {
+            background: linear-gradient(145deg, #a3d39e, #d6e8aa);
+            box-shadow: 0 4px 12px rgba(163, 211, 158, .22);
+        }
+        .nav-link {
+            border: 1px solid transparent;
+            border-radius: 999px;
+            color: #d3e2d7;
+            transition: background .18s ease, color .18s ease, border-color .18s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, .1);
+            border-color: rgba(255, 255, 255, .1);
+            color: #fff;
+        }
+        main { animation: page-enter .35s ease-out both; }
+        section, article {
+            box-shadow: 0 2px 5px rgba(18, 38, 27, .025), 0 12px 30px rgba(18, 38, 27, .035);
+        }
+        section table thead, article table thead { letter-spacing: .075em; }
+        section tbody tr { transition: background-color .15s ease; }
+        input, select, textarea {
+            transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #69a47c !important;
+            box-shadow: 0 0 0 3px rgba(73, 139, 94, .13);
+            outline: none;
+        }
+        button, a { transition: color .16s ease, background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease; }
+        button:active, a:active { transform: translateY(1px); }
+        .page-kicker { color: var(--forest-600) !important; }
+        .page-title { letter-spacing: -.045em; }
+        .metric-card { position: relative; overflow: hidden; }
+        .metric-card::after {
+            background: linear-gradient(135deg, rgba(47, 121, 81, .08), transparent 65%);
+            content: "";
+            inset: 0;
+            pointer-events: none;
+            position: absolute;
+        }
+        .metric-icon {
+            align-items: center;
+            background: var(--forest-100);
+            border-radius: 14px;
+            color: var(--forest-700);
+            display: inline-flex;
+            height: 42px;
+            justify-content: center;
+            width: 42px;
+        }
+        .primary-action {
+            background: linear-gradient(135deg, var(--forest-700), var(--forest-600)) !important;
+            box-shadow: 0 6px 14px rgba(47, 121, 81, .18);
+        }
+        .primary-action:hover { box-shadow: 0 8px 18px rgba(47, 121, 81, .25); }
+        .soft-divider { border-color: var(--line) !important; }
+        ::selection { background: #d9ebdc; color: var(--forest-950); }
+
+        @keyframes page-enter {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+        @media print {
+            nav, footer, .no-print { display: none !important; }
+            body, main { background: white !important; color: black !important; }
+            main { max-width: none !important; padding: 0 !important; }
+            .print-shadow { box-shadow: none !important; border-color: #ddd !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 antialiased flex flex-col">
+    <nav class="app-nav sticky top-0 z-30 text-white no-print">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5">
+            <a href="{{ url_for('index') }}" class="flex items-center gap-3 font-bold tracking-tight">
+                <span class="brand-mark flex h-10 w-10 items-center justify-center rounded-xl text-lg text-emerald-950">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" class="h-6 w-6"><path d="M4 19V9.5L12 5l8 4.5V19M8 19v-5h8v5M3 19h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 5V2m0 0c-2.6.1-4 1.2-4 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </span>
+                <span class="text-base leading-tight sm:text-lg">Forrajería<span class="mt-0.5 block text-[11px] font-medium tracking-wide text-emerald-100/70">GESTIÓN COMERCIAL</span></span>
+            </a>
+            <div class="flex items-center gap-1 text-xs font-semibold sm:gap-2 sm:text-sm">
+                <a href="{{ url_for('index') }}" class="nav-link flex items-center gap-2 px-3 py-2 {{ 'active' if request.endpoint == 'index' else '' }}">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" class="hidden h-4 w-4 sm:block"><path d="M3.5 13h7V4h-7v9Zm10 7h7v-9h-7v9Zm0-11h7V4h-7v5Zm-10 11h7v-5h-7v5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    Panel
+                </a>
+                <a href="{{ url_for('listar_proveedores') }}" class="nav-link flex items-center gap-2 px-3 py-2 {{ 'active' if request.endpoint in ['listar_proveedores', 'editar_proveedor', 'ver_ctacte', 'exportar_ctacte', 'imprimir_ctacte'] else '' }}">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" class="hidden h-4 w-4 sm:block"><path d="M16 20v-1.7a3.3 3.3 0 0 0-3.3-3.3H6.3A3.3 3.3 0 0 0 3 18.3V20m16-6a3 3 0 0 1 2 2.8V20M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7-7.8a4 4 0 0 1 0 7.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    Proveedores
+                </a>
+                {% if cloud_mode and session.get('authenticated') %}
+                <form method="post" action="{{ url_for('logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="nav-link px-3 py-2">Salir</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="mx-auto w-full max-w-7xl flex-grow px-4 py-7 sm:px-5 sm:py-9">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div role="status" class="mb-4 rounded-xl border px-4 py-3 text-sm font-medium shadow-sm {{ 'border-emerald-200 bg-emerald-50 text-emerald-800' if category == 'success' else 'border-rose-200 bg-rose-50 text-rose-800' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="mt-10 border-t border-slate-200/80 bg-white/70 py-5 text-center text-xs text-slate-500 no-print">
+        Forrajería <span class="mx-1 text-slate-300">·</span> Administración de proveedores
+    </footer>
+</body>
+</html>

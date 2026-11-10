@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Proveedores | Forrajería{% endblock %}
+{% block content %}
+<div class="mb-7">
+    <p class="page-kicker text-xs font-bold uppercase tracking-[.18em]">Directorio comercial</p>
+    <h1 class="page-title mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Proveedores</h1>
+    <p class="mt-2 text-sm text-slate-500">Administrá contactos y consultá el saldo de cada cuenta.</p>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3">
+    <section class="h-fit rounded-2xl border border-slate-200/80 bg-white p-6">
+        <div class="mb-5 flex items-center gap-3">
+            <span class="metric-icon">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </span>
+            <div><h2 class="text-lg font-bold text-slate-900">Nuevo proveedor</h2><p class="text-xs text-slate-500">Completá los datos de contacto</p></div>
+        </div>
+        <form method="post" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="block text-sm font-medium text-slate-700">Razón social
+                <input name="razon_social" maxlength="150" required class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100">
+            </label>
+            <label class="block text-sm font-medium text-slate-700">CUIT / CUIL
+                <input name="cuit_cuil" inputmode="numeric" placeholder="30-12345678-9" maxlength="13" required class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100">
+            </label>
+            <label class="block text-sm font-medium text-slate-700">Correo electrónico
+                <input type="email" name="email" maxlength="100" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100">
+            </label>
+            <label class="block text-sm font-medium text-slate-700">Teléfono
+                <input name="telefono" maxlength="50" class="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100">
+            </label>
+            <button class="primary-action w-full rounded-xl px-4 py-2.5 font-semibold text-white">Guardar proveedor</button>
+        </form>
+    </section>
+
+    <section class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white lg:col-span-2">
+        <div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div>
+                <h2 class="text-lg font-bold tracking-tight text-slate-900">Cartera de proveedores</h2>
+                <p class="text-sm text-slate-500">{{ proveedores|length }} proveedor(es)</p>
+            </div>
+            <form method="get" class="flex gap-2">
+                <input name="q" value="{{ busqueda }}" placeholder="Buscar nombre o CUIT" class="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                <button class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Buscar</button>
+            </form>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-5 py-3">Proveedor</th>
+                        <th class="px-5 py-3">CUIT / CUIL</th>
+                        <th class="px-5 py-3 text-right">Saldo</th>
+                        <th class="px-5 py-3 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for p in proveedores %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-4">
+                            <span class="font-semibold text-slate-900">{{ p.razon_social }}</span>
+                            <span class="block text-xs text-slate-500">{{ p.email or 'Sin correo' }} · {{ 'Activo' if p.estado else 'Inactivo' }}</span>
+                        </td>
+                        <td class="px-5 py-4 font-mono text-xs">{{ p.cuit_cuil }}</td>
+                        <td class="px-5 py-4 text-right font-bold {{ 'text-rose-600' if p.saldo_centavos > 0 else 'text-emerald-600' if p.saldo_centavos < 0 else 'text-slate-500' }}">{{ p.saldo_centavos|money }}</td>
+                        <td class="px-5 py-4">
+                            <div class="flex justify-end gap-2 whitespace-nowrap">
+                                <a href="{{ url_for('ver_ctacte', proveedor_id=p.id) }}" class="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100">Cuenta</a>
+                                <a href="{{ url_for('editar_proveedor', proveedor_id=p.id) }}" class="rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200">Editar</a>
+                                <form method="post" action="{{ url_for('cambiar_estado', proveedor_id=p.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="rounded-md px-3 py-1.5 text-xs font-semibold {{ 'bg-rose-50 text-rose-700 hover:bg-rose-100' if p.estado else 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }}">{{ 'Inactivar' if p.estado else 'Activar' }}</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="px-5 py-10 text-center text-slate-500">No hay proveedores que coincidan con la búsqueda.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

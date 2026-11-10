@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Cuenta corriente | {{ proveedor.razon_social }}{% endblock %}
+{% block content %}
+<header class="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 print-shadow">
+    <div>
+        <p class="page-kicker text-xs font-bold uppercase tracking-[.18em]">Cuenta corriente</p>
+        <h1 class="page-title mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">{{ proveedor.razon_social }}</h1>
+        <p class="mt-1 text-sm text-slate-500">{{ proveedor.cuit_cuil }} · {{ proveedor.email or 'Sin correo' }} · {{ proveedor.telefono or 'Sin teléfono' }}</p>
+        {% if not proveedor.estado %}<span class="mt-2 inline-block rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Proveedor inactivo</span>{% endif %}
+    </div>
+    <div class="flex items-center gap-4">
+        <div class="text-right">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Saldo actual</p>
+            <p class="text-2xl font-black {{ 'text-rose-600' if saldo_total > 0 else 'text-emerald-600' if saldo_total < 0 else 'text-slate-600' }}">{{ saldo_total|money }}</p>
+        </div>
+        {% if print_mode %}<button type="button" onclick="window.print()" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white no-print">Imprimir / Guardar PDF</button>{% endif %}
+        <a href="{{ url_for('listar_proveedores') }}" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 no-print">Volver</a>
+    </div>
+</header>
+
+<div class="grid gap-6 lg:grid-cols-3">
+    {% if not print_mode %}
+    <section class="h-fit rounded-2xl border border-slate-200/80 bg-white p-5 no-print">
+        <div class="mb-4 flex items-center gap-3">
+            <span class="metric-icon">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5.5a2 2 0 0 1 2-2Zm7 0v5h5m-9 5h6m-6 3.5h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div><h2 class="text-base font-bold text-slate-900">Cargar comprobante</h2><p class="text-xs text-slate-500">Nuevo movimiento contable</p></div>
+        </div>
+        {% if proveedor.estado %}
+        <form method="post" class="space-y-3" id="movement-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="block text-sm font-medium text-slate-700">Tipo
+                <select name="tipo_comprobante" id="document-type" required class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2">
+                    <optgroup label="Aumenta la deuda (Debe)">
+                        <option value="FACTURA_A">Factura A</option>
+                        <option value="FACTURA_B">Factura B</option>
+                        <option value="FACTURA_C">Factura C</option>
+                        <option value="NOTA_DEBITO">Nota de débito</option>
+                    </optgroup>
+                    <optgroup label="Disminuye la deuda (Haber)">
+                        <option value="ORDEN_PAGO">Orden de pago</option>
+                        <option value="RECIBO">Recibo / pago</option>
+                        <option value="NOTA_CREDITO">Nota de crédito</option>
+                    </optgroup>
+                </select>
+            </label>
+            <label class="block text-sm font-medium text-slate-700">Número de comprobante
+                <input name="numero_comprobante" maxlength="50" required placeholder="0001-00012345" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            </label>
+            <label class="block text-sm font-medium text-slate-700">Fecha
+                <input type="date" name="fecha" value="{{ today }}" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            </label>
+            <label id="due-date-field" class="block text-sm font-medium text-slate-700">Vencimiento
+                <input type="date" name="vencimiento" id="due-date" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+            </label>
+            <label class="block text-sm font-medium text-slate-700">Importe
+                <div class="mt-1 flex items-center rounded-lg border border-slate-300 px-3">
+                    <span class="text-slate-400">$</span>
+                    <input type="number" step="0.01" min="0.01" name="monto" required placeholder="0,00" class="w-full border-0 px-2 py-2 outline-none shadow-none">
+                </div>
+            </label>
+            {% if facturas_pendientes %}
+            <fieldset id="allocation-field" class="rounded-lg border border-slate-200 p-3">
+                <legend class="px-1 text-sm font-semibold text-slate-700">Imputar pago (opcional)</legend>
+                <p class="mb-2 text-xs text-slate-500">Ingresá cuánto de este pago cancela cada factura. El saldo no imputado queda a cuenta.</p>
+                <div class="max-h-48 space-y-2 overflow-y-auto">
+                    {% for factura in facturas_pendientes %}
+                    <label class="flex items-center justify-between gap-2 text-xs">
+                        <span class="min-w-0">
+                            <span class="block font-semibold text-slate-700">{{ factura.tipo_comprobante }} · {{ factura.numero_comprobante }}</span>
+                            <span class="text-slate-500">Vence {{ factura.vencimiento or 'sin fecha' }} · pendiente {{ factura.pendiente_centavos|money }}</span>
+                        </span>
+                        <input type="number" name="imputacion_{{ factura.id }}" step="0.01" min="0.01" max="{{ factura.pendiente_centavos / 100 }}" placeholder="0,00" class="w-24 rounded-md border border-slate-300 px-2 py-1 text-right">
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+            {% endif %}
+            <label class="block text-sm font-medium text-slate-700">Observaciones
+                <textarea name="observaciones" rows="2" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"></textarea>
+            </label>
+            <button class="primary-action w-full rounded-xl px-4 py-2.5 font-semibold text-white">Asentar en cuenta</button>
+        </form>
+        {% else %}
+        <p class="text-sm text-slate-500">Activá el proveedor para cargar nuevos comprobantes. El historial sigue disponible.</p>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <section class="{{ 'lg:col-span-3' if print_mode else 'lg:col-span-2' }} overflow-hidden rounded-2xl border border-slate-200/80 bg-white print-shadow">
+        <div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div>
+                <h2 class="font-bold tracking-tight text-slate-900">Movimientos</h2>
+                <p class="text-xs text-slate-500">Historial cronológico · Debe suma deuda, Haber registra pagos/créditos</p>
+            </div>
+            {% if not print_mode %}
+            <div class="flex flex-wrap gap-2 no-print">
+                <a href="{{ url_for('exportar_ctacte', proveedor_id=proveedor.id, desde=desde, hasta=hasta) }}" class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100">Exportar Excel (CSV)</a>
+                <a href="{{ url_for('imprimir_ctacte', proveedor_id=proveedor.id, desde=desde, hasta=hasta) }}" class="rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200">Vista para PDF</a>
+            </div>
+            {% endif %}
+        </div>
+        {% if not print_mode %}
+        <form method="get" class="flex flex-wrap items-end gap-3 border-b border-slate-100 bg-slate-50/80 p-4 no-print">
+            <label class="text-xs font-semibold text-slate-600">Desde
+                <input type="date" name="desde" value="{{ desde }}" class="mt-1 block rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm">
+            </label>
+            <label class="text-xs font-semibold text-slate-600">Hasta
+                <input type="date" name="hasta" value="{{ hasta }}" class="mt-1 block rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm">
+            </label>
+            <button class="rounded-lg bg-slate-800 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700">Filtrar</button>
+            <a href="{{ url_for('ver_ctacte', proveedor_id=proveedor.id) }}" class="px-2 py-2 text-xs font-semibold text-emerald-800">Limpiar</a>
+        </form>
+        {% elif desde or hasta %}
+        <p class="border-b border-slate-100 px-5 py-3 text-sm text-slate-500">Período: {{ desde or 'inicio' }} — {{ hasta or 'hoy' }}</p>
+        {% endif %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500">
+                    <tr>
+                        <th class="px-3 py-3 sm:px-4">Fecha</th>
+                        <th class="px-3 py-3 sm:px-4">Comprobante</th>
+                        <th class="px-3 py-3 text-right sm:px-4">Debe</th>
+                        <th class="px-3 py-3 text-right sm:px-4">Haber</th>
+                        <th class="px-3 py-3 text-right sm:px-4">Saldo acumulado</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for m in movimientos %}
+                    <tr class="align-top">
+                        <td class="whitespace-nowrap px-3 py-3 text-slate-500 sm:px-4">{{ m.fecha }}</td>
+                        <td class="px-3 py-3 sm:px-4">
+                            <span class="font-semibold">{{ m.tipo_comprobante }} · {{ m.numero_comprobante }}</span>
+                            {% if m.vencimiento %}<span class="block text-xs text-slate-500">Vence {{ m.vencimiento }}</span>{% endif %}
+                            {% if m.imputado_centavos %}<span class="block text-xs text-emerald-700">Imputado: {{ m.imputado_centavos|money }}</span>{% endif %}
+                            {% if m.observaciones %}<span class="block text-xs italic text-slate-500">{{ m.observaciones }}</span>{% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-3 text-right font-mono text-rose-700 sm:px-4">{{ m.debe_centavos|money if m.debe_centavos else '—' }}</td>
+                        <td class="whitespace-nowrap px-3 py-3 text-right font-mono text-emerald-700 sm:px-4">{{ m.haber_centavos|money if m.haber_centavos else '—' }}</td>
+                        <td class="whitespace-nowrap px-3 py-3 text-right font-mono font-bold sm:px-4">{{ m.saldo_resultante_centavos|money }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="px-5 py-10 text-center text-slate-500">No hay movimientos en el período seleccionado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="border-t border-slate-100 bg-slate-50 px-5 py-3 text-right text-xs text-slate-500">
+            Los movimientos son de solo lectura para preservar el historial contable.
+        </div>
+    </section>
+</div>
+<script>
+    const typeField = document.getElementById("document-type");
+    const dueField = document.getElementById("due-date-field");
+    const dueInput = document.getElementById("due-date");
+    const allocationField = document.getElementById("allocation-field");
+    if (typeField) {
+        const updateFields = () => {
+            const invoice = ["FACTURA_A", "FACTURA_B", "FACTURA_C", "NOTA_DEBITO"].includes(typeField.value);
+            if (dueField) dueField.hidden = !invoice;
+            if (dueInput) dueInput.required = invoice;
+            if (allocationField) allocationField.hidden = !["ORDEN_PAGO", "RECIBO"].includes(typeField.value);
+        };
+        typeField.addEventListener("change", updateFields);
+        updateFields();
+    }
+</script>
+{% endblock %}
