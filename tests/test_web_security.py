@@ -83,9 +83,10 @@ class WebSecurityTests(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login", response.location)
         sync_response = self.client.get("/sync-version")
-        self.assertEqual(sync_response.status_code, 302)
+        self.assertEqual(sync_response.status_code, 401)
 
         login_page = self.client.get("/login")
+        self.assertIn(b'data-sync-enabled="false"', login_page.data)
         token = re.search(rb'name="csrf_token" value="([^"]+)"', login_page.data).group(1).decode()
         response = self.client.post(
             "/login",

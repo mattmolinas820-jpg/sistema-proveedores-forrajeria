@@ -276,7 +276,7 @@ def obtener_proveedores(busqueda=""):
             LEFT JOIN movimientos_ctacte AS m ON m.proveedor_id = p.id
             WHERE p.razon_social LIKE ? OR p.cuit_cuil LIKE ?
             GROUP BY p.id
-            ORDER BY p.estado DESC, p.razon_social COLLATE NOCASE
+            ORDER BY p.estado DESC, LOWER(p.razon_social)
             """,
             (query, query),
         ).fetchall()
@@ -349,7 +349,7 @@ def obtener_resumen():
             FROM proveedores AS p
             LEFT JOIN movimientos_ctacte AS m ON m.proveedor_id = p.id
             GROUP BY p.id
-            ORDER BY p.razon_social COLLATE NOCASE
+            ORDER BY LOWER(p.razon_social)
             """
         ).fetchall()
         vencimientos = connection.execute(

@@ -127,6 +127,10 @@ class ServicesTests(unittest.TestCase):
         self.assertEqual(chart[0]["saldo_centavos"], 25000)
         self.assertEqual(chart[0]["porcentaje"], 100)
 
+    def test_provider_and_dashboard_ordering_uses_sqlite_postgres_compatible_lower(self):
+        services.obtener_proveedores()
+        services.obtener_resumen()
+
     def test_existing_scaffold_database_is_migrated(self):
         current_path = database.DB_PATH
         legacy_path = Path(self.temp_dir.name) / "legacy.db"

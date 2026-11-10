@@ -33,7 +33,7 @@ init_db()
 
 @app.before_request
 def protect_application():
-    if cloud_mode and request.endpoint not in {"login", "static", "health"}:
+    if cloud_mode and request.endpoint not in {"login", "static", "health", "sync_version"}:
         if not session.get("authenticated"):
             return redirect(url_for("login", next=request.full_path))
 
@@ -53,7 +53,9 @@ def inject_security_helpers():
 
     sync_revision = (
         get_sync_revision()
-        if cloud_mode and request.endpoint != "imprimir_ctacte"
+        if cloud_mode
+        and session.get("authenticated")
+        and request.endpoint != "imprimir_ctacte"
         else None
     )
     return {
@@ -98,6 +100,8 @@ def health():
 
 @app.get("/sync-version")
 def sync_version():
+    if cloud_mode and not session.get("authenticated"):
+        return jsonify(error="Autenticación requerida."), 401
     return jsonify(revision=get_sync_revision())
 
 
